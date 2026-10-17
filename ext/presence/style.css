@@ -1,0 +1,898 @@
+/**
+ * Presence launcher — peaceful rebrand of the cannon sample (id `presence`).
+ */
+
+#cannonOverlay {
+  display: none;
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 15;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+#cannonOverlay.is-active {
+  display: block;
+}
+
+#cannonSvg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.cannon-hud {
+  position: absolute;
+  /* Same floor as the active extension button (one row below hamburger). */
+  top: var(--chrome-extension-row-top, 54px);
+  /* Default: menu on the right — sit just left of the menu column. */
+  left: auto;
+  right: 76px;
+  width: fit-content;
+  max-width: calc(100% - 86px);
+  min-height: 34px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 2px;
+  padding: 6px 12px;
+  border-radius: 12px;
+  background: rgba(36, 18, 32, 0.78);
+  color: #fdeef5;
+  font: 12px/1.4 "Segoe UI", system-ui, sans-serif;
+  letter-spacing: 0.01em;
+  pointer-events: none;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  opacity: 1;
+  border: 1px solid rgba(255, 182, 210, 0.22);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.28);
+}
+
+.cannon-hud.hud-menu-left {
+  left: 76px;
+  right: auto;
+}
+
+.cannon-hud.is-watcher-strip {
+  white-space: nowrap;
+  overflow: visible;
+  max-width: calc(100% - 86px);
+}
+
+/* Watcher strip under #topUI (idle via parent). */
+.love-watcher-strip {
+  position: fixed;
+  top: var(--chrome-extension-row-top, 54px);
+  right: 76px;
+  left: auto;
+  z-index: 27;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 4px;
+  width: fit-content;
+  max-width: calc(100% - 86px);
+  pointer-events: none;
+}
+
+.love-watcher-strip.is-menu-left {
+  left: 76px;
+  right: auto;
+}
+
+.love-watcher-strip.has-geo-target {
+  right: 118px;
+  max-width: calc(100% - 128px);
+}
+
+.love-watcher-strip.has-geo-target.is-menu-left {
+  left: 118px;
+  right: auto;
+}
+
+.love-watcher-strip[hidden] {
+  display: none !important;
+}
+
+.love-watcher-strip-btn {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 34px;
+  margin: 0;
+  padding: 6px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 182, 210, 0.22);
+  background: rgba(36, 18, 32, 0.78);
+  color: #fdeef5;
+  font: 12px/1.4 "Segoe UI", system-ui, sans-serif;
+  letter-spacing: 0.01em;
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+  pointer-events: auto !important;
+  touch-action: manipulation;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.28);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.love-watcher-strip-btn:hover,
+.love-watcher-strip-btn:focus-visible {
+  color: #fff;
+  border-color: rgba(255, 200, 220, 0.45);
+}
+
+.love-sending-label {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 4px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 182, 210, 0.18);
+  background: rgba(28, 14, 26, 0.72);
+  color: #fdeef5;
+  font: 11px/1.35 "Segoe UI", system-ui, sans-serif;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  pointer-events: none;
+  opacity: 0.92;
+}
+
+.love-sending-label[hidden] {
+  display: none !important;
+}
+
+.love-watcher-menu {
+  position: fixed;
+  z-index: 200;
+  min-width: 220px;
+  max-width: min(320px, calc(100vw - 16px));
+  max-height: min(40vh, 280px);
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding: 6px 0;
+  border-radius: 10px;
+  background: rgba(28, 16, 28, 0.96);
+  color: #fdeef5;
+  border: 1px solid rgba(255, 182, 210, 0.35);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45);
+  font: 12px/1.35 "Segoe UI", system-ui, sans-serif;
+  pointer-events: auto;
+}
+
+.love-watcher-menu[hidden] {
+  display: none !important;
+}
+
+.love-watcher-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px 7px 12px;
+}
+
+.love-watcher-row.is-self {
+  background: rgba(255, 182, 210, 0.08);
+}
+
+.love-watcher-row.is-incoming {
+  font-weight: 700;
+  animation: love-watcher-incoming-pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes love-watcher-incoming-pulse {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .love-watcher-row.is-incoming {
+    animation: none;
+    opacity: 1;
+  }
+}
+
+.love-watcher-emoji {
+  flex: 0 0 auto;
+  font-size: 15px;
+  line-height: 1;
+}
+
+.love-watcher-place {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.love-watcher-you {
+  flex: 0 0 auto;
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  opacity: 0.45;
+}
+
+.love-watcher-empty {
+  padding: 10px 12px;
+  opacity: 0.75;
+}
+
+.cannon-hud-line {
+  overflow-wrap: anywhere;
+}
+
+.cannon-hud-nums {
+  opacity: 0.88;
+  font-size: 11px;
+}
+
+/* Persistent re-request when location refused / ignored */
+.cannon-geo-target {
+  position: fixed;
+  top: var(--chrome-extension-row-top, 54px);
+  right: 76px;
+  z-index: 26;
+  box-sizing: border-box;
+  width: 34px;
+  height: 34px;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 182, 210, 0.5);
+  background: rgba(40, 20, 35, 0.88);
+  color: #ffd0e0;
+  cursor: pointer;
+  pointer-events: auto;
+  touch-action: manipulation;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.28);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.cannon-geo-target[hidden] {
+  display: none !important;
+}
+
+.cannon-geo-target:hover,
+.cannon-geo-target:focus-visible {
+  color: #fff;
+  border-color: rgba(255, 200, 220, 0.85);
+  background: rgba(55, 28, 45, 0.95);
+}
+
+.cannon-geo-target:active {
+  transform: scale(0.96);
+}
+
+.cannon-geo-target .geo-target-ban {
+  display: none;
+}
+
+.cannon-geo-target.is-localized .geo-target-ban {
+  display: block;
+}
+
+.cannon-geo-target.is-localized {
+  color: #ffb0c4;
+}
+
+.cannon-geo-target.is-busy {
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+/* When the geo target shares the menu side, tuck the HUD further inward. */
+.cannon-hud.has-geo-target {
+  right: 118px;
+  left: auto;
+  max-width: calc(100% - 128px);
+}
+
+.cannon-hud.has-geo-target.hud-menu-left {
+  left: 118px;
+  right: auto;
+  max-width: calc(100% - 128px);
+}
+
+.cannon-geo-target.is-menu-left {
+  right: auto;
+  left: 76px;
+}
+
+.cannon-geo-target.is-menu-right {
+  left: auto;
+  right: 76px;
+}
+
+.cannon-hud.is-geo-cta {
+  pointer-events: auto;
+  padding: 0;
+  background: transparent;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.cannon-hud-main {
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 182, 210, 0.45);
+  background: rgba(40, 20, 35, 0.88);
+  color: #fdeef5;
+  font: 12px/1.35 "Segoe UI", system-ui, sans-serif;
+}
+
+.cannon-geo-btn {
+  display: block;
+  margin: 0;
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 182, 210, 0.45);
+  background: rgba(40, 20, 35, 0.88);
+  color: #fdeef5;
+  font: 12px/1.35 "Segoe UI", system-ui, sans-serif;
+  cursor: pointer;
+  text-align: left;
+  max-width: min(280px, calc(100vw - 96px));
+  -webkit-tap-highlight-color: transparent;
+}
+
+.cannon-geo-btn:active {
+  transform: scale(0.98);
+}
+
+.cannon-geo-link {
+  margin: 0;
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 182, 210, 0.4);
+  background: rgba(40, 20, 35, 0.75);
+  color: #ffd0e0;
+  font: 11px/1.3 "Segoe UI", system-ui, sans-serif;
+  cursor: pointer;
+  text-decoration: underline;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.cannon-path {
+  fill: none;
+  stroke: rgba(232, 105, 150, 0.88);
+  stroke-width: 2.25;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.cannon-path.is-preview {
+  stroke-dasharray: 5 5;
+  stroke: rgba(255, 182, 210, 0.95);
+  stroke-width: 1.75;
+}
+
+.cannon-path.is-done {
+  stroke-dasharray: 4 6;
+  stroke: rgba(232, 140, 175, 0.95);
+  stroke-width: 2;
+}
+
+.cannon-impulse {
+  fill: none;
+  stroke: #fff;
+  stroke-width: 2.25;
+  stroke-linecap: round;
+}
+
+.cannon-impulse-head {
+  fill: #e86996;
+  stroke: #fff;
+  stroke-width: 1;
+}
+
+.cannon-impact-hint {
+  fill: rgba(255, 255, 255, 0.15);
+  stroke: #ffb6d2;
+  stroke-width: 1.5;
+  stroke-dasharray: 3 3;
+}
+
+.cannon-emoji-marker {
+  pointer-events: none;
+  user-select: none;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.45));
+}
+
+/* Geolocation pad: body-fixed hit target over the SVG eye (EPIC shows through). */
+.cannon-pad-hit {
+  position: fixed;
+  width: 56px;
+  height: 56px;
+  margin: 0;
+  padding: 0;
+  border: 1.5px solid rgba(255, 182, 210, 0.35);
+  border-radius: 50%;
+  pointer-events: auto;
+  touch-action: none;
+  cursor: grab;
+  /* Above #cannonOverlay (15); below launch coach (25) / geo target (26). */
+  z-index: 24;
+  display: grid;
+  place-items: center;
+  font-size: 14px;
+  line-height: 1;
+  color: transparent;
+  background: transparent;
+  box-shadow: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.cannon-pad-hit:active {
+  cursor: grabbing;
+  transform: scale(0.96);
+}
+
+.cannon-pad-hit[hidden] {
+  display: none !important;
+}
+
+/* Simulated watcher eye — tap to change emoji (no drag-aim). */
+.cannon-sim-eye-hit {
+  position: fixed;
+  width: 56px;
+  height: 56px;
+  margin: 0;
+  padding: 0;
+  border: 1.5px dashed rgba(160, 220, 255, 0.55);
+  border-radius: 50%;
+  pointer-events: auto;
+  touch-action: none;
+  cursor: grab;
+  z-index: 24;
+  display: grid;
+  place-items: center;
+  color: transparent;
+  background: rgba(40, 80, 120, 0.12);
+  box-shadow: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.cannon-sim-eye-hit:hover,
+.cannon-sim-eye-hit:focus-visible {
+  border-color: rgba(180, 230, 255, 0.85);
+  background: rgba(60, 120, 160, 0.22);
+}
+
+.cannon-sim-eye-hit:active {
+  cursor: grabbing;
+  transform: scale(0.96);
+}
+
+.cannon-sim-eye-hit[hidden] {
+  display: none !important;
+}
+
+.cannon-emoji-marker.is-blur {
+  filter: blur(0.6px) drop-shadow(0 0 2px rgba(255, 140, 180, 0.35));
+}
+
+.cannon-emoji-marker.is-flying {
+  filter: drop-shadow(0 0 4px rgba(255, 160, 190, 0.65));
+}
+
+.cannon-emoji-marker.is-settled {
+  filter: drop-shadow(0 0 5px rgba(255, 150, 185, 0.55));
+}
+
+.cannon-emoji-marker.is-impact {
+  filter: drop-shadow(0 0 8px rgba(255, 170, 200, 0.85));
+}
+
+/* —— Emoji picker sheet (body-mounted; above playback chrome) —— */
+.cannon-emoji-sheet {
+  position: fixed;
+  bottom: 72px;
+  width: min(340px, calc(100% - 24px));
+  max-height: min(42vh, 360px);
+  display: flex;
+  flex-direction: column;
+  border-radius: 14px;
+  background: rgba(28, 16, 28, 0.94);
+  color: #fdeef5;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
+  pointer-events: auto;
+  z-index: 200;
+  overflow: hidden;
+}
+
+.cannon-emoji-sheet--right {
+  right: 16px;
+  left: auto;
+  transform: none;
+}
+
+.cannon-emoji-sheet--left {
+  left: 16px;
+  right: auto;
+  transform: none;
+}
+
+.cannon-emoji-sheet[hidden] {
+  display: none !important;
+}
+
+.cannon-emoji-sheet-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px 6px;
+  font: 600 13px/1.2 "Segoe UI", system-ui, sans-serif;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.cannon-emoji-close {
+  border: none;
+  background: transparent;
+  color: #fdeef5;
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 4px;
+}
+
+.cannon-emoji-sheet-body {
+  overflow-y: auto;
+  padding: 8px 10px 12px;
+  -webkit-overflow-scrolling: touch;
+}
+
+.cannon-emoji-cat-label {
+  margin: 8px 2px 4px;
+  font: 600 11px/1.2 "Segoe UI", system-ui, sans-serif;
+  color: rgba(255, 200, 220, 0.85);
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.cannon-emoji-grid {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 2px;
+}
+
+.cannon-emoji-cell {
+  border: none;
+  background: transparent;
+  font-size: 22px;
+  line-height: 1.35;
+  padding: 4px 0;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.cannon-emoji-cell:hover,
+.cannon-emoji-cell.is-selected {
+  background: rgba(232, 105, 150, 0.28);
+}
+
+/* Opposite the app menu so chips stay clear of the hamburger / toggle. */
+.cannon-filter {
+  position: absolute;
+  top: 10px;
+  display: flex;
+  gap: 4px;
+  z-index: 2;
+  pointer-events: auto;
+  opacity: 1;
+}
+
+.cannon-filter--left {
+  left: 10px;
+  right: auto;
+}
+
+.cannon-filter--right {
+  right: 10px;
+  left: auto;
+}
+
+.cannon-filter[hidden] {
+  display: none;
+}
+
+.cannon-filter-btn {
+  padding: 5px 9px;
+  border: 1px solid rgba(255, 200, 220, 0.35);
+  border-radius: 8px;
+  background: rgba(40, 20, 35, 0.72);
+  color: #fdeef5;
+  font: 11px/1.2 "Segoe UI", system-ui, sans-serif;
+  cursor: pointer;
+}
+
+.cannon-filter-btn.is-active {
+  background: rgba(232, 105, 150, 0.45);
+  border-color: rgba(255, 200, 220, 0.7);
+}
+
+.cannon-toast {
+  position: fixed;
+  top: max(56px, calc(var(--menu-corner-height, 56px) + 8px));
+  left: 50%;
+  transform: translateX(-50%);
+  width: max-content;
+  max-width: min(340px, calc(100vw - 24px));
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: rgba(40, 20, 35, 0.92);
+  color: #fdeef5;
+  font: 13px/1.35 "Segoe UI", system-ui, sans-serif;
+  pointer-events: none;
+  z-index: 90;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  text-align: center;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(255, 200, 220, 0.25);
+  opacity: 1;
+}
+
+.cannon-toast[hidden] {
+  display: none !important;
+}
+
+.cannon-toast-line {
+  overflow-wrap: anywhere;
+}
+
+.cannon-toast-dest {
+  color: #ffb6d2;
+  font-weight: 700;
+}
+
+.cannon-toast-nums {
+  opacity: 0.88;
+  font-size: 11px;
+}
+
+.cannon-online-eye.is-meet .cannon-eye-sclera {
+  filter: drop-shadow(0 0 2.5px rgba(255, 220, 90, 0.75));
+}
+
+.cannon-eye-sclera {
+  pointer-events: none;
+}
+
+.cannon-emoji-marker.is-iris {
+  paint-order: stroke fill;
+  filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.35));
+}
+
+.cannon-emoji-marker.is-photo-badge {
+  paint-order: stroke fill;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.65));
+}
+
+.cannon-online-eye.has-photo .cannon-eye-photo {
+  pointer-events: none;
+}
+
+/* Filter chips (if shown) share the extension-toggle row with the HUD. */
+#cannonOverlay.is-active.cannon-filters-left .cannon-hud,
+#cannonOverlay.is-active.cannon-filters-right .cannon-hud {
+  top: var(--chrome-extension-row-top, 54px);
+}
+
+@media (max-width: 640px), (max-height: 520px) {
+  .cannon-emoji-sheet {
+    bottom: 56px;
+    max-height: min(38vh, 300px);
+  }
+
+  .cannon-emoji-grid {
+    grid-template-columns: repeat(7, 1fr);
+  }
+
+  .cannon-filter--left {
+    left: 8px;
+  }
+
+  .cannon-filter--right {
+    right: 8px;
+  }
+
+  .cannon-toast {
+    top: max(48px, calc(var(--menu-corner-height, 56px) + 8px));
+    max-width: calc(100vw - 24px);
+  }
+
+  #cannonOverlay.is-active .cannon-hud {
+    right: 76px;
+    left: auto;
+    max-width: calc(100% - 86px);
+  }
+
+  #cannonOverlay.is-active .cannon-hud.hud-menu-left {
+    left: 76px;
+    right: auto;
+  }
+
+  #cannonOverlay.is-active .cannon-hud.has-geo-target {
+    right: 118px;
+    left: auto;
+    max-width: calc(100% - 128px);
+  }
+
+  #cannonOverlay.is-active .cannon-hud.has-geo-target.hud-menu-left {
+    left: 118px;
+    right: auto;
+  }
+}
+
+.cannon-pad-hit.is-coach-pulse {
+  animation: love-coach-pulse 1.6s ease-in-out infinite;
+  border-color: rgba(255, 200, 220, 0.85);
+}
+
+@keyframes love-coach-pulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(255, 182, 210, 0.45);
+  }
+  50% {
+    transform: scale(1.08);
+    box-shadow: 0 0 0 8px rgba(255, 182, 210, 0);
+  }
+}
+
+.love-send-coach {
+  position: fixed;
+  z-index: 25;
+  max-width: none;
+  padding: 8px 12px;
+  font-size: 13px;
+  line-height: 1.3;
+  white-space: nowrap;
+  color: #fff;
+  background: rgba(18, 10, 16, 0.9);
+  border: 1px solid rgba(255, 182, 210, 0.45);
+  border-radius: 10px;
+  pointer-events: none;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+/* Contemplation: no launch coach / pulse while chrome is faded. */
+body.chrome-idle .love-send-coach,
+body.chrome-idle .cannon-pad-hit.is-coach-pulse,
+body.chrome-idle .love-corner-eye-btn.is-coach-pulse {
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+body.chrome-idle .cannon-pad-hit.is-coach-pulse,
+body.chrome-idle .love-corner-eye-btn.is-coach-pulse {
+  animation: none !important;
+  box-shadow: none !important;
+}
+
+.love-send-coach[hidden] {
+  display: none !important;
+}
+
+.love-geo-consent {
+  position: fixed;
+  inset: 0;
+  z-index: 310;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  /* #topUI is pointer-events:none so empty chrome does not steal globe hits. */
+  pointer-events: auto;
+}
+
+.love-geo-consent[hidden] {
+  display: none;
+}
+
+.love-geo-consent-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+}
+
+.love-geo-consent-dialog {
+  position: relative;
+  max-width: 28rem;
+  width: 100%;
+  padding: 28px 24px 22px;
+  background: rgba(18, 18, 18, 0.96);
+  border: 1px solid rgba(255, 182, 210, 0.28);
+  border-radius: 12px;
+  color: lightgray;
+  text-align: center;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5);
+}
+
+.love-geo-consent-dialog h2 {
+  margin: 0 0 10px;
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: #fff;
+}
+
+.love-geo-consent-dialog p {
+  margin: 0 0 20px;
+  font-size: 0.95rem;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+@media (max-width: 480px) {
+  .love-geo-consent-dialog p {
+    white-space: normal;
+  }
+}
+
+.love-geo-consent-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.love-geo-consent-primary,
+.love-geo-consent-secondary {
+  all: unset;
+  box-sizing: border-box;
+  display: block;
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  text-align: center;
+  cursor: pointer;
+}
+
+.love-geo-consent-primary {
+  background: rgba(255, 182, 210, 0.22);
+  border: 1px solid rgba(255, 200, 220, 0.55);
+  color: #fff;
+}
+
+.love-geo-consent-primary:hover,
+.love-geo-consent-primary:focus-visible {
+  background: rgba(255, 182, 210, 0.35);
+}
+
+.love-geo-consent-secondary {
+  color: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.love-geo-consent-secondary:hover,
+.love-geo-consent-secondary:focus-visible {
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.28);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cannon-pad-hit.is-coach-pulse {
+    animation: none;
+    outline: 2px solid rgba(255, 200, 220, 0.85);
+  }
+}
