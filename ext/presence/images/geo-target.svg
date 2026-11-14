@@ -1,0 +1,8 @@
+<svg color="#fff" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+  <circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="1.6"/>
+  <circle cx="12" cy="12" r="3.2" fill="none" stroke="currentColor" stroke-width="1.6"/>
+  <circle cx="12" cy="12" r="1.2" fill="currentColor"/>
+  <path d="M12 2.5v3.2M12 18.3v3.2M2.5 12h3.2M18.3 12h3.2" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+  <!-- Shown by CSS when location is denied (.geo-target-ban). -->
+  <path class="geo-target-ban" d="M5 19L19 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+</svg>
